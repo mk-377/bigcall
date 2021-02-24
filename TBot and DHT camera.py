@@ -10,13 +10,10 @@ bot = telebot.TeleBot("1688735327:AAEsc2qe6yPLoxIx8hBgCEu6U5dCnqUAFcE")
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
 GPIO.cleanup()
-cam = picamera.PiCamera()
-
-cam.start_preview('/home/pi/CAM-VIDEOS/video-try1.h264')
 
 def checkTH():
     instance = dht11.DHT11(pin = 4)
-    global result = instance.read()
+    result = instance.read()
     a = result.temperature
     while a == 0:
         instance = dht11.DHT11(pin = 4)
@@ -53,15 +50,16 @@ def start_message(message):
 @bot.message_handler(content_types=['text'])
 def send_text(message):
     if message.text.lower() == 'room temp/hum':
-        checkTH()
+        instance = dht11.DHT11(pin = 4)
+        result = instance.read()
+        a = result.temperature
+        while a == 0:
+            instance = dht11.DHT11(pin = 4)
+            result = instance.read()
+            a = result.temperature
         bot.send_message(message.chat.id, f"""Cейчас в комнате:
 TEMP: {result.temperature} °C
 HUM: {result.humidity} %""")
-        print(message.chat.id)
-    elif message.text.lower() == 'video':
-         last_video = open('/home/pi/CAM-VIDEOS/video-try1.h264')
-         cam.stop_preview()
-         bot.send_message(message.chat.id, last_video)
          
         
 # для работы нон стоп
