@@ -1,0 +1,80 @@
+# импортируем библиотеки
+import telebot
+from telebot import types
+import RPi.GPIO as GPIO
+import dht11
+import picamera
+import time
+
+#типо setup-a в c++
+bot = telebot.TeleBot("1688735327:AAEsc2qe6yPLoxIx8hBgCEu6U5dCnqUAFcE")
+GPIO.setwarnings(False)
+GPIO.setmode(GPIO.BCM)
+GPIO.cleanup()
+cam = picamera.PiCamera()
+
+cam.start_preview('/home/pi/CAM-VIDEOS/video-try1.h264')
+
+def checkTH():
+    instance = dht11.DHT11(pin = 4)
+    global result = instance.read()
+    a = result.temperature
+    while a == 0:
+        instance = dht11.DHT11(pin = 4)
+        result = instance.read()
+        a = result.temperature
+
+# создаем клавиатуру
+def get_commands_keyboard():
+    command_select = types.ReplyKeyboardMarkup(row_width=5, resize_keyboard=True, one_time_keyboard=True)
+    command_select.row('Температура и влажность', 'Освещённость')
+    command_select.row('Видео', 'Информация')
+    command_select.row('На базу')
+    command_select.row('Помощь')
+    return command_select
+
+# декоратор для команды /start
+@bot.message_handler(commands=['start'])
+def start_message(message):
+    bot.send_message(message.chat.id, 'Система Робо-Офис запущена', reply_markup=get_commands_keyboard())
+    global id(message.chat.id)
+
+@bot.message_handler(commands=['help'])
+def start_message(message):
+    bot.send_message(message.chat.id, '''Лист помощи
+                                        "Температура и влажность" - показывает температутру и влажность в помещении
+                                        "Видео" - отправляет последнее видео из библиотеки
+                                        "Освещённость" - показывает уровень освещения в помещении
+                                        "На базу" - отправляет робота на базу
+                                        "Информация" - показывает все показатели в помещении
+                                        "Помощь" - выводит лист помощи''')
+
+# декоратор для текста
+@bot.message_handler(content_types=['text'])
+def send_text(message):
+    if message.text.lower() == 'Температура и влажность':
+        checkTH()
+        bot.send_message(message.chat.id, f"""Cейчас в комнате:
+                                                TEMP: {result.temperature} °C
+                                                HUM: {result.humidity} %""")
+        
+    elif message.text.lower() == 'помощь':
+         bot.send_message(message.chat.id, '''Лист помощи
+                                            "Температура и влажность в помещении" - показывает температутру и влажность в помещении
+                                            "Видео" - отправляет последнее видео из библиотеки
+                                            "Освещённость" - показывает уровень освещения в помещении
+                                            "На базу" - отправляет робота на базу
+                                            "Вся информация" - показывает все показатели в помещении
+                                            "Помощь" - выводит лист помощи''')
+    elif message.text.lower() == 'Информация':
+        checkTH()
+        bot.send_message(message.chat.id, f'''В помещении:
+                                                Температура: {result.temperature} °C
+                                                Влажность: {result.humidity} %
+                                                Освещённость: none''')
+    elif message.text.lower() == 'освещённость':
+        bot.send_message(message.chat.id, 'а нема')
+        
+         
+
+bot.polling(none_stop=True)

@@ -38,7 +38,7 @@ def back():
     GPIO.output(ln2,GPIO.HIGH)
     GPIO.output(ln3,GPIO.LOW)
     GPIO.output(ln4,GPIO.HIGH)
-    sleep(0.7)
+    sleep(5)
     stop()
     
 def forward():
@@ -47,7 +47,7 @@ def forward():
     GPIO.output(ln2,GPIO.LOW)
     GPIO.output(ln3,GPIO.HIGH)
     GPIO.output(ln4,GPIO.LOW)
-    sleep(0.7)
+    sleep(5)
     stop()
 
 def right():
