@@ -5,6 +5,7 @@ import RPi.GPIO as GPIO
 from time import sleep
 import dht11
 
+# пины для подачи сигнала моторам
 ln1 = 26
 ln2 = 19
 ln3 = 13
@@ -32,7 +33,7 @@ def left():
     sleep(0.33)
     stop()
     
-def back():
+def forward():
     setup()
     GPIO.output(ln1,GPIO.LOW)
     GPIO.output(ln2,GPIO.HIGH)
@@ -41,7 +42,7 @@ def back():
     sleep(5)
     stop()
     
-def forward():
+def back():
     setup()
     GPIO.output(ln1,GPIO.HIGH)
     GPIO.output(ln2,GPIO.LOW)
@@ -60,16 +61,13 @@ def right():
     stop()
 
 
-
-#cam.start_preview('/home/pi/CAM-VIDEOS/video-try1.h264')
-
-
 bot = telebot.TeleBot("1688735327:AAEsc2qe6yPLoxIx8hBgCEu6U5dCnqUAFcE")
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
 setup()
 GPIO.cleanup()
 
+# основная клавиатура
 def get_commands_keyboard():
     command_select = types.ReplyKeyboardMarkup(row_width=5, resize_keyboard=True, one_time_keyboard=True)
     command_select.row('Температура и влажность', 'Освещённость')
@@ -78,6 +76,7 @@ def get_commands_keyboard():
     command_select.row('Помощь')
     return command_select
 
+# клавиатура для ручного управления роботом
 def get_commands_keyboard_moving():
     command_select = types.ReplyKeyboardMarkup(row_width=5, resize_keyboard=True, one_time_keyboard=True)
     command_select.row('Вперёд')
@@ -86,10 +85,12 @@ def get_commands_keyboard_moving():
     command_select.row('EXIT')
     return command_select
 
+# ответ при отправке пользователем '/start'
 @bot.message_handler(commands=['start'])
 def start_message(message):
     bot.send_message(message.chat.id, 'Система Робо-Офис запущена', reply_markup=get_commands_keyboard())
 
+# ответ при отправке пользователем '/help'
 @bot.message_handler(commands=['help'])
 def start_message(message):
     bot.send_message(message.chat.id, '''Лист помощи
